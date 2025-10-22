@@ -40,7 +40,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             raise credentials_exception()
     except JWTError:
         raise credentials_exception()
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.query(models.user.User).filter(models.user.User.id == user_id).first()
     if user is None:
         raise credentials_exception()
     return user
