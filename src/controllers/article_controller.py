@@ -3,9 +3,9 @@ from src import models
 from slugify import slugify
 from datetime import datetime
 
-def create_article(db: Session, author: models.User, title: str, description: str, body: str, tag_list: list):
+def create_article(db: Session, author: models.user.User, title: str, description: str, body: str, tag_list: list):
     slug = slugify(title)
-    article = models.Article(
+    article = models.article.Article(
         slug=slug,
         title=title,
         description=description,
@@ -21,12 +21,12 @@ def create_article(db: Session, author: models.User, title: str, description: st
     return article
 
 def get_article(db: Session, slug: str):
-    return db.query(models.Article).filter(models.Article.slug == slug).first()
+    return db.query(models.article.Article).filter(models.article.Article.slug == slug).first()
 
 def get_all_articles(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Article).offset(skip).limit(limit).all()
+    return db.query(models.article.Article).offset(skip).limit(limit).all()
 
-def update_article(db: Session, article: models.Article, title: str = None, description: str = None, body: ste = None):
+def update_article(db: Session, article: models.article.Article, title: str = None, description: str = None, body: str = None):
     if title:
         article.title = title
         article.slug = slugify(title)
@@ -39,12 +39,12 @@ def update_article(db: Session, article: models.Article, title: str = None, desc
     db.refresh(article)
     return article
 
-def delete_article(db: Session, article: models.Article):
+def delete_article(db: Session, article: models.article.Article):
     db.delete(article)
     db.commit()
 
-def add_comment(db: Session, article: models.Article, author: models.User, body: str):
-    comment = models.Comment(
+def add_comment(db: Session, article: models.article.Article, author: models.user.User, body: str):
+    comment = models.comment.Comment(
         body=body,
         article_id=article.id,
         author_id=author.id,
@@ -55,9 +55,9 @@ def add_comment(db: Session, article: models.Article, author: models.User, body:
     db.refresh(comment)
     return comment
 
-def get_comments(db: Session, article: models.Article):
-    return db.query(models.Comment).filter(models.Comment.article_id == article.id).all()
+def get_comments(db: Session, article: models.article.Article):
+    return db.query(models.comment.Comment).filter(models.comment.Comment.article_id == article.id).all()
 
-def delete_comment(db: Session, comment: models.Comment):
+def delete_comment(db: Session, comment: models.comment.Comment):
     db.delete(comment)
     db.commit()
