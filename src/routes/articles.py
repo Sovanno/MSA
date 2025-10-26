@@ -14,14 +14,14 @@ def create_article_route(payload: schemas.ArticleCreate, db: Session = Depends(g
         article = create_article(db, current_user, payload.title, payload.description, payload.body, payload.tagList)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"article": {
-            "slug": article.slug,
-            "title": article.title,
-            "description": article.description,
-            "body": article.body,
-            "tagList": article.tag_list,
-            "author": current_user.username
-    }}
+    return schemas.ArticleResponse(
+        slug=article.slug,
+        title=article.title,
+        description=article.description,
+        body=article.body,
+        tagList=article.tag_list,
+        author=current_user.username
+    )
 
 
 @router.get("/", tags=["articles"])
@@ -39,14 +39,14 @@ def get_article_route(slug:str, db: Session = Depends(get_db)):
     article = get_article(db, slug)
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")
-    return {"article": {
-            "slug": article.slug,
-            "title": article.title,
-            "description": article.description,
-            "body": article.body,
-            "tagList": article.tag_list,
-            "author": article.author.username if article.author else None
-    }}
+    return schemas.ArticleResponse(
+        slug=article.slug,
+        title=article.title,
+        description=article.description,
+        body=article.body,
+        tagList=article.tag_list,
+        author=article.author.username
+    )
 
 
 @router.put("/{slug}", tags=["articles"])
@@ -57,14 +57,14 @@ def update_article_route(slug: str, payload: schemas.ArticleUpdate, db: Session 
     if article.author_id != current_user.id:
         raise HTTPException(status_code=403, detail="Нет прав на изменение статьи")
     updated = update_article(db, article, title=payload.title, description=payload.description, body=payload.body)
-    return {"article": {
-            "slug": updated.slug,
-            "title": updated.title,
-            "description": updated.description,
-            "body": updated.body,
-            "tagList": updated.tag_list,
-            "author": current_user.username
-    }}
+    return schemas.ArticleResponse(
+        slug=article.slug,
+        title=article.title,
+        description=article.description,
+        body=article.body,
+        tagList=article.tag_list,
+        author=current_user.username
+    )
 
 
 @router.delete("/{slug}", tags=["articles"])
@@ -84,11 +84,7 @@ def add_comment_route(slug: str, payload: schemas.CommentCreate, db: Session = D
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")
     comment = add_comment(db, article, current_user, payload.body)
-    return {"comment": {
-            "id": comment.id,
-            "body": comment.body,
-            "author": current_user.username
-    }}
+    return schemas.CommentResponse(id=comment.id, body=comment.body, author=current_user.username)
 
 
 @router.get("/{slug}/comments", tags=["comments"])
