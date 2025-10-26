@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from src.database import base
 from datetime import datetime
 
+
 class Article(base):
     __tablename__ = "articles"
     id = Column(Integer, primary_key=True, index=True)

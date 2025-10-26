@@ -1,11 +1,13 @@
 from pydantic import BaseModel, EmailStr, Field, constr
 from typing import List, Optional
 
+
 # Users
 class UserCreate(BaseModel):
     email: EmailStr
     username: str
     password: str
+
 
 class UserResponse(BaseModel):
     email: EmailStr
@@ -17,12 +19,14 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None
     bio: Optional[str] = None
     image: Optional[str] = None
     password: Optional[str] = None
+
 
 # Articles
 class ArticleCreate(BaseModel):
@@ -31,10 +35,12 @@ class ArticleCreate(BaseModel):
     body: Optional[str] = ""
     tagList: List[str] = Field(default_factory=list)
 
+
 class ArticleUpdate(BaseModel):
     title: Optional[constr(min_length=1)] = None
     description: Optional[str] = None
     body: Optional[str] = None
+
 
 class ArticleResponse(BaseModel):
     slug: str
@@ -47,9 +53,11 @@ class ArticleResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 # Comments
 class CommentCreate(BaseModel):
     body: constr(min_length=1)
+
 
 class CommentResponse(BaseModel):
     id: int

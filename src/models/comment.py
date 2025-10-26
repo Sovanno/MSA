@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from src.database import base
 from datetime import datetime
 
+
 class Comment(base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True, index=True)
