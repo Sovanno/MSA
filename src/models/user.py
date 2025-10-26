@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from src.database import base
 
@@ -8,8 +8,8 @@ class User(base):
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
-    bio = Column(Text, default="")
+    bio = Column(String, default="")
     image = Column(String, default="")
 
-    articles = relationship("Article", back_populates="author")
-    comments = relationship("Comment", back_populates="author")
+    articles = relationship("Article", back_populates="author", cascade="all, delete-orphan")
+    comments = relationship("Comment", back_populates="author", cascade="all, delete-orphan")
