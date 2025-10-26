@@ -10,8 +10,8 @@ class Comment(base):
     body = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    article_id = Column(Integer, ForeignKey("articles.id"), nullable=False)
-    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    article_id = Column(Integer, ForeignKey("articles.id", ondelete="CASCADE"), nullable=False)
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     article = relationship("Article", back_populates="comments")
     author = relationship("User", back_populates="comments")

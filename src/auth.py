@@ -7,10 +7,13 @@ from sqlalchemy.orm import Session
 from src import models
 from src.database import sessinlocal
 import os
+from dotenv import load_dotenv
 
-SECRET_KEY = os.environ.get("JWT_SECRET", "12345")
+load_dotenv()
+
+SECRET_KEY = os.environ.get("JWT_SECRET")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 security = HTTPBearer()
 
@@ -46,13 +49,20 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"✅ Token decoded successfully: {payload}")
         user_id = int(payload.get("user_id"))
+        print(f"🔍 User ID from token: {user_id} (type: {type(user_id)})")
         if user_id is None:
+            print(123456)
             raise credentials_exception()
-    except JWTError:
+    except JWTError as e:
+        print(f"Error type: {type(e).__name__}")
         raise credentials_exception()
     user = db.query(models.user.User).filter(models.user.User.id == user_id).first()
     if user is None:
+        print("-----------------")
         raise credentials_exception()
     return user
 
+#eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3NjE0OTA4NDd9.44JYq_2KCQI3hqvZqJwOBRwBHloF1OF250DFDy_JYJA
+#eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3NjE0OTA5MjB9.WcVnMWPxTRpggpjbBpuPB8RoSroUKdTLQEPU_PTovGE

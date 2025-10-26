@@ -12,5 +12,5 @@ class User(base):
     bio = Column(String, default="")
     image = Column(String, default="")
 
-    articles = relationship("Article", back_populates="author", cascade="all, delete-orphan")
+    articles = relationship("Article", back_populates="author", cascade="all, delete-orphan", passive_deletes=True)
     comments = relationship("Comment", back_populates="author", cascade="all, delete-orphan")
