@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth import get_db
 from src.controllers.user_controller import create_user, authenticate_user, update_user
 from src.auth import create_access_token, get_current_user
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api")
 
 
 @router.post("/users", tags=["users"])
-def register_user(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+def register_user(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     try:
         user = create_user(db, payload.email, payload.username, payload.password)
     except ValueError as e:
@@ -19,7 +19,7 @@ def register_user(payload: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/users/login", tags=["users"])
-def login_user(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+def login_user(payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db)):
     email = payload.email
     password = payload.password
     user = authenticate_user(db, email, password)
@@ -35,7 +35,7 @@ def get_current_user_route(current_user = Depends(get_current_user)):
 
 
 @router.put("/user", tags=["users"])
-def update_current_user(payload: schemas.UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def update_current_user(payload: schemas.UserUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     try:
         user = update_user(db, current_user, email=payload.email, username=payload.username, bio=payload.bio, image=payload.image, password=payload.password)
     except Exception as e:

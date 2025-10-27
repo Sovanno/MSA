@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Generator
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from src import models
 from src.database import sessinlocal
 from config import settings
@@ -26,7 +26,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-def get_db() -> Generator[Session, None, None]:
+def get_db() -> Generator[AsyncSession, None, None]:
     db = sessinlocal()
     try:
         yield db
@@ -42,7 +42,7 @@ def credentials_exception():
     )
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: AsyncSession = Depends(get_db)):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
