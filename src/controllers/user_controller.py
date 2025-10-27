@@ -1,6 +1,7 @@
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from src import models
+from sqlalchemy import select, update, delete
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
@@ -13,32 +14,38 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_user(db: Session, email: str, username: str, password: str):
-    if db.query(models.user.User).filter(models.user.User.email == email).first():
+async def create_user(db: AsyncSession, email: str, username: str, password: str):
+    result = await db.execute(select(models.user.User).filter(models.user.User.email == email))
+    if result.scalar_one_or_none():
         raise ValueError("Пользователь с таким email уже существует")
-    if db.query(models.user.User).filter(models.user.User.username == username).first():
+
+    # Проверяем, существует ли username
+    result = await db.execute(select(models.user.User).filter(models.user.User.username == username))
+    if result.scalar_one_or_none():
         raise ValueError("Пользователь с таким username уже существует")
 
     hashed_pwd = get_password_hash(password)
     user = models.user.User(email=email, username=username, password=hashed_pwd)
     db.add(user)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
 
-def authenticate_user(db: Session, email: str, password: str):
-    user = db.query(models.user.User).filter(models.user.User.email == email).first()
+def authenticate_user(db: AsyncSession, email: str, password: str):
+    result = await db.execute(select(models.user.User).filter(models.user.User.email == email))
+    user = result.scalar_one_or_none()
     if not user or not verify_password(password, user.password):
         return None
     return user
 
 
-def get_user_by_username(db: Session, username: str):
-    return db.query(models.user.User).filter(models.user.User.username == username).first()
+def get_user_by_username(db: AsyncSession, username: str):
+    result = await db.execute(select(models.user.User).filter(models.user.User.username == username))
+    return result.scalar_one_or_none()
 
 
-def update_user(db: Session, user: models.user.User, email: str = None, username: str = None, bio: str = None, image: str = None, password: str = None):
+def update_user(db: AsyncSession, user: models.user.User, email: str = None, username: str = None, bio: str = None, image: str = None, password: str = None):
     if email is not None:
         user.email = email
     if username is not None:
@@ -49,6 +56,6 @@ def update_user(db: Session, user: models.user.User, email: str = None, username
         user.image = image
     if password is not None:
         user.password = get_password_hash(password)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
