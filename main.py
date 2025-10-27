@@ -7,7 +7,7 @@ import os
 
 app = FastAPI(title="Blog")
 
-base.metadata.create_all(bind=engine)
+#base.metadata.create_all(bind=engine)
 
 app.include_router(users.router)
 app.include_router(articles.router)
