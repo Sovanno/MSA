@@ -32,7 +32,7 @@ async def create_user(db: AsyncSession, email: str, username: str, password: str
     return user
 
 
-def authenticate_user(db: AsyncSession, email: str, password: str):
+async def authenticate_user(db: AsyncSession, email: str, password: str):
     result = await db.execute(select(models.user.User).filter(models.user.User.email == email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(password, user.password):
@@ -40,12 +40,12 @@ def authenticate_user(db: AsyncSession, email: str, password: str):
     return user
 
 
-def get_user_by_username(db: AsyncSession, username: str):
+async def get_user_by_username(db: AsyncSession, username: str):
     result = await db.execute(select(models.user.User).filter(models.user.User.username == username))
     return result.scalar_one_or_none()
 
 
-def update_user(db: AsyncSession, user: models.user.User, email: str = None, username: str = None, bio: str = None, image: str = None, password: str = None):
+async def update_user(db: AsyncSession, user: models.user.User, email: str = None, username: str = None, bio: str = None, image: str = None, password: str = None):
     if email is not None:
         user.email = email
     if username is not None:

@@ -26,7 +26,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-def get_db() -> Generator[AsyncSession, None, None]:
+async def get_db() -> Generator[AsyncSession, None, None]:
     db = sessinlocal()
     try:
         yield db
@@ -42,7 +42,7 @@ def credentials_exception():
     )
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: AsyncSession = Depends(get_db)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: AsyncSession = Depends(get_db)):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
