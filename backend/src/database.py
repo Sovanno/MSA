@@ -2,10 +2,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
+from typing import Generator
+from sqlalchemy.ext.asyncio import AsyncSession
 
-DATABASE_URL = settings.database_url
+DATABASE_URL = settings.database_main_url
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 sessinlocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 base = declarative_base()
+
+async def get_db() -> Generator[AsyncSession, None, None]:
+    db = sessinlocal()
+    try:
+        yield db
+    finally:
+        db.close()

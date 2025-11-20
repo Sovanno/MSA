@@ -4,7 +4,8 @@ from pydantic import Field
 
 class Settings(BaseSettings):
     # Настройки подключения к базе данных
-    database_url: str = Field(..., alias="DATABASE_URL")
+    database_main_url: str = Field(..., alias="DATABASE_MAIN_URL")
+    database_users_url: str = Field(..., alias="DATABASE_USERS_URL")
 
     # JWT настройки
     jwt_secret: str = Field(..., alias="JWT_SECRET")
