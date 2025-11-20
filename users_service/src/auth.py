@@ -1,11 +1,11 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from typing import Optional, Generator
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from src import models
-from src.database import sessinlocal
+from users_service.src import models
+from users_service.src.database import get_db
 from config import settings
 
 SECRET_KEY = settings.jwt_secret
@@ -26,14 +26,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-async def get_db() -> Generator[AsyncSession, None, None]:
-    db = sessinlocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 def credentials_exception():
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,7 +40,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = int(payload.get("user_id"))
         if user_id is None:
-            print(123456)
             raise credentials_exception()
     except JWTError as e:
         print(f"Error type: {type(e).__name__}")

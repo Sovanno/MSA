@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.auth import get_db, get_current_user
-from src import models
-from src.controllers.article_controller import create_article, get_all_articles, get_article, update_article, delete_article, add_comment, get_comments, delete_comment
-from src import schemas
-
+from backend.src.auth import get_current_user, TokenUser
+from backend.src.database import get_db
+from backend.src import models
+from backend.src.controllers.article_controller import create_article, get_all_articles, get_article, update_article, delete_article, add_comment, get_comments, delete_comment
+from backend.src import schemas
 router = APIRouter(prefix="/api/articles")
 
 
 @router.post("/", tags=["articles"])
-async def create_article_route(payload: schemas.ArticleCreate, db: AsyncSession = Depends(get_db), current_user: models.user.User = Depends(get_current_user)):
+async def create_article_route(payload: schemas.ArticleCreate, db: AsyncSession = Depends(get_db), current_user: TokenUser = Depends(get_current_user)):
     try:
-        article = create_article(db, current_user, payload.title, payload.description, payload.body, payload.tagList)
+        article = create_article(db, current_user.id, payload.title, payload.description, payload.body, payload.tagList)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     return schemas.ArticleResponse(
@@ -20,7 +20,7 @@ async def create_article_route(payload: schemas.ArticleCreate, db: AsyncSession 
         description=article.description,
         body=article.body,
         tagList=article.tag_list,
-        author=current_user.username
+        author=str(current_user.username)
     )
 
 
@@ -35,7 +35,7 @@ async def list_articles(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{slug}", tags=["articles"])
-async def get_article_route(slug:str, db: AsyncSession = Depends(get_db)):
+async def get_article_route(slug: str, db: AsyncSession = Depends(get_db)):
     article = get_article(db, slug)
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")
@@ -50,7 +50,7 @@ async def get_article_route(slug:str, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{slug}", tags=["articles"])
-async def update_article_route(slug: str, payload: schemas.ArticleUpdate, db: AsyncSession = Depends(get_db), current_user: models.user.User = Depends(get_current_user)):
+async def update_article_route(slug: str, payload: schemas.ArticleUpdate, db: AsyncSession = Depends(get_db), current_user: TokenUser = Depends(get_current_user)):
     article = get_article(db, slug)
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")
@@ -68,7 +68,7 @@ async def update_article_route(slug: str, payload: schemas.ArticleUpdate, db: As
 
 
 @router.delete("/{slug}", tags=["articles"])
-async def delete_article_route(slug: str, db: AsyncSession = Depends(get_db), current_user: models.user.User = Depends(get_current_user)):
+async def delete_article_route(slug: str, db: AsyncSession = Depends(get_db), current_user: TokenUser = Depends(get_current_user)):
     article = get_article(db, slug)
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")
@@ -79,7 +79,7 @@ async def delete_article_route(slug: str, db: AsyncSession = Depends(get_db), cu
 
 
 @router.post("/{slug}/comments", tags=["comments"])
-async def add_comment_route(slug: str, payload: schemas.CommentCreate, db: AsyncSession = Depends(get_db), current_user: models.user.User = Depends(get_current_user)):
+async def add_comment_route(slug: str, payload: schemas.CommentCreate, db: AsyncSession = Depends(get_db), current_user: TokenUser = Depends(get_current_user)):
     article = get_article(db, slug)
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")
@@ -100,7 +100,7 @@ async def list_comments_route(slug: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.delete("/{slug}/comments/{comment_id}", tags=["comments"])
-async def delete_comment_route(slug: str, comment_id: int, db: AsyncSession = Depends(get_db), current_user: models.user.User = Depends(get_current_user)):
+async def delete_comment_route(slug: str, comment_id: int, db: AsyncSession = Depends(get_db), current_user: TokenUser = Depends(get_current_user)):
     article = get_article(db, slug)
     if not article:
         raise HTTPException(status_code=404, detail="Статья не найдена")

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.auth import get_db
-from src.controllers.user_controller import create_user, authenticate_user, update_user
-from src.auth import create_access_token, get_current_user
-from src import schemas
+from users_service.src.auth import get_db
+from users_service.src.controllers.user_controller import create_user, authenticate_user, update_user
+from users_service.src.auth import create_access_token, get_current_user
+from users_service.src import schemas
 
 router = APIRouter(prefix="/api")
 
@@ -14,7 +14,7 @@ async def register_user(payload: schemas.UserCreate, db: AsyncSession = Depends(
         user = create_user(db, payload.email, payload.username, payload.password)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    token = create_access_token({"user_id": user.id})
+    token = create_access_token({"user_id": user.id, "username": user.username})
     return schemas.UserResponse(email=user.email, username=user.username, bio=user.bio, image=user.image, token=token)
 
 
@@ -25,7 +25,7 @@ async def login_user(payload: schemas.LoginRequest, db: AsyncSession = Depends(g
     user = authenticate_user(db, email, password)
     if not user:
         raise HTTPException(status_code=400, detail="Неправильный email или пароль")
-    token = create_access_token({"user_id": user.id})
+    token = create_access_token({"user_id": user.id, "username": user.username})
     return schemas.UserResponse(email=user.email, username=user.username, bio=user.bio, image=user.image, token=token)
 
 
