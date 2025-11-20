@@ -1,21 +1,10 @@
-#!/bin/sh
-# wait-for-db.sh
+#!/bin/bash
 set -e
 
-host="$1"
-shift
-
-echo "Waiting for database $host..."
-until pg_isready -h "$host" -p 5432; do
-  sleep 2
+while ! nc -z db 5432; do
+  sleep 1
 done
 
-# Запускаем миграции перед стартом приложения
-if [ "$1" = "alembic" ]; then
-  echo "Running Alembic migrations..."
-  shift
-  exec alembic upgrade head
-fi
+alembic upgrade head
 
-# Запускаем команду приложения
 exec "$@"
