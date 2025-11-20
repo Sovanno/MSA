@@ -4,9 +4,10 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from users_service.src import models
-from users_service.src.database import get_db
+from src import models
+from src.database import get_db
 from config import settings
+from sqlalchemy import select
 
 SECRET_KEY = settings.jwt_secret
 ALGORITHM = "HS256"
@@ -34,18 +35,24 @@ def credentials_exception():
     )
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: AsyncSession = Depends(get_db)):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = int(payload.get("user_id"))
+        user_id = payload.get("user_id")
         if user_id is None:
             raise credentials_exception()
     except JWTError as e:
         print(f"Error type: {type(e).__name__}")
         raise credentials_exception()
-    user = db.query(models.user.User).filter(models.user.User.id == user_id).first()
+
+    # Асинхронный запрос к базе
+    result = await db.execute(select(models.user.User).where(models.user.User.id == int(user_id)))
+    user = result.scalar_one_or_none()
     if user is None:
-        print("-----------------")
         raise credentials_exception()
+
     return user

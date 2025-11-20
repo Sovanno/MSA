@@ -1,15 +1,11 @@
 from fastapi import FastAPI
-from src.routes import users, articles
-from src.database import base
+from src.routes import articles
 from src.database import engine
 from sqlalchemy import text
 import os
 
-app = FastAPI(title="Blog")
+app = FastAPI(title="Blog main")
 
-#base.metadata.create_all(bind=engine)
-
-app.include_router(users.router)
 app.include_router(articles.router)
 
 
@@ -25,7 +21,7 @@ def health():
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Blog API"}
+    return {"message": "Welcome to Blog API main"}
 
 
 if __name__ == "__main__":

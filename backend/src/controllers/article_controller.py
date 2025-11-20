@@ -1,9 +1,11 @@
-from backend.src import models
+from src import models
 from slugify import slugify
 from datetime import datetime
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 
 async def create_article(db: AsyncSession, author_id: int, title: str, description: Optional[str], body: Optional[str], tag_list: Optional[List[str]]):
@@ -25,16 +27,22 @@ async def create_article(db: AsyncSession, author_id: int, title: str, descripti
 
 
 async def get_article(db: AsyncSession, slug: str):
-    result = await db.execute(select(models.article.Article).filter(models.article.Article.slug == slug))
+    db.expire_all()
+    result = await db.execute(
+        select(models.article.Article)
+        .filter(models.article.Article.slug == slug)
+    )
     return result.scalar_one_or_none()
 
 
 async def get_all_articles(db: AsyncSession, skip: int = 0, limit: int = 100):
+    db.expire_all()
     result = await db.execute(
-        select(models.article.Article).offset(skip).limit(limit)
+        select(models.article.Article)
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all()
-
 
 async def update_article(db: AsyncSession, article: models.article.Article, title: str = None, description: str = None, body: str = None):
     if title is not None:

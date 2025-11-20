@@ -1,20 +1,24 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 from config import settings
-from typing import Generator
-from sqlalchemy.ext.asyncio import AsyncSession
 
 DATABASE_URL = settings.database_main_url
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-sessinlocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Асинхронный движок
+engine = create_async_engine(DATABASE_URL, echo=True, future=True, pool_pre_ping=True)
 
+# Асинхронный sessionmaker
+async_session = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
+
+# Базовый класс для моделей
 base = declarative_base()
 
-async def get_db() -> Generator[AsyncSession, None, None]:
-    db = sessinlocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Зависимость FastAPI для получения асинхронной сессии
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session() as session:
+        yield session

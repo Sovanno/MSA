@@ -1,20 +1,24 @@
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from config import settings
-from typing import Generator
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import AsyncGenerator
 
-DATABASE_URL = settings.database_users_url
+DATABASE_URL = settings.database_users_url  # например: "postgresql+asyncpg://user:pass@host:port/dbname"
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-sessinlocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Асинхронный движок
+engine = create_async_engine(DATABASE_URL, echo=True, pool_pre_ping=True)
 
+# Асинхронная сессия
+async_session = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
+
+# Базовый класс моделей
 base = declarative_base()
 
-async def get_db() -> Generator[AsyncSession, None, None]:
-    db = sessinlocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Dependency для FastAPI
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session() as session:
+        yield session
