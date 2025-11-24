@@ -4,7 +4,7 @@ from src.database import engine
 from sqlalchemy import text
 import os
 
-app = FastAPI(title="Blog users")
+app = FastAPI(title="Blog users", openapi_url="/users/openapi.json", docs_url="/users/docs")
 
 app.include_router(users.router)
 
@@ -29,6 +29,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "user:app",
         host="0.0.0.0",
-        port=8000,
+        port=80,
         reload=os.getenv("DEBUG", "false").lower() == "true"
     )
