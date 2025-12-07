@@ -40,3 +40,12 @@ class CommentResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TokenPayload(BaseModel):
+    user_id: int
+    username: str
+    exp: Optional[int] = None
+
+    class Config:
+        from_attributes = True

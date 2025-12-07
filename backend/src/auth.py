@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from config import settings
+from src.schemas import TokenPayload
 
 USERS_JWT_SECRET = settings.jwt_secret
 ALGORITHM = "HS256"
@@ -29,12 +30,12 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     token = credentials.credentials
     try:
         payload = jwt.decode(token, USERS_JWT_SECRET, algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
-        username = payload.get("username")
-        email = payload.get("email")
+        token_data = TokenPayload(**payload)
+        user_id = token_data.user_id
+        username = token_data.username
         if user_id is None:
             raise credentials_exception()
     except JWTError:
         raise credentials_exception()
 
-    return TokenUser(id=user_id, username=username, email=email)
+    return TokenUser(id=user_id, username=username)

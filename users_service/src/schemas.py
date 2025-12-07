@@ -30,3 +30,12 @@ class UserUpdate(BaseModel):
     bio: Optional[str] = None
     image: Optional[str] = None
     password: Optional[str] = None
+
+
+class TokenPayload(BaseModel):
+    user_id: int
+    username: str
+    exp: Optional[int] = None
+
+    class Config:
+        from_attributes = True

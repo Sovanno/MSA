@@ -8,6 +8,7 @@ from src import models
 from src.database import get_db
 from config import settings
 from sqlalchemy import select
+from src.schemas import TokenPayload
 
 SECRET_KEY = settings.jwt_secret
 ALGORITHM = "HS256"
@@ -42,7 +43,8 @@ async def get_current_user(
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
+        token_data = TokenPayload(**payload)
+        user_id = token_data.user_id
         if user_id is None:
             raise credentials_exception()
     except JWTError as e:
