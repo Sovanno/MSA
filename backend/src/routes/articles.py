@@ -5,6 +5,7 @@ from src.database import get_db
 from src import models
 from src.controllers.article_controller import create_article, get_all_articles, get_article, update_article, delete_article, add_comment, get_comments, delete_comment
 from src import schemas
+from src.tasks import notify_followers_task
 from sqlalchemy import select
 router = APIRouter(prefix="/api/articles")
 
@@ -15,6 +16,13 @@ async def create_article_route(payload: schemas.ArticleCreate, db: AsyncSession 
         article = await create_article(db, current_user.id, payload.title, payload.description, payload.body, payload.tagList)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    try:
+        task = notify_followers_task.delay(author_id=current_user.id, article_slug=article.slug)
+        print(f"Task enqueued for article {article.slug}, task_id: {task.id}")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Failed to enqueue notification task: {str(e)}")
+
     return schemas.ArticleResponse(
         slug=article.slug,
         title=article.title,
