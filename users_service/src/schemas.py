@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     bio: Optional[str] = ""
     image: Optional[str] = ""
     token: Optional[str] = None
+    subscription_key: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -36,6 +37,21 @@ class TokenPayload(BaseModel):
     user_id: int
     username: str
     exp: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+# Subscriptions
+
+class SubscriptionKeyUpdate(BaseModel):
+    subscription_key: str
+
+class SubscriptionCreate(BaseModel):
+    target_user_id: int
+
+class SubscriberResponse(BaseModel):
+    subscriber_id: int
+    subscription_key: Optional[str]
 
     class Config:
         from_attributes = True
