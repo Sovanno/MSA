@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import relationship
 from src.database import base
 
@@ -11,3 +11,18 @@ class User(base):
     password = Column(String, nullable=False)
     bio = Column(String, default="")
     image = Column(String, default="")
+    subscription_key = Column(Text, nullable=True)
+
+    subscriptions = relationship(
+        "Subscriber",
+        foreign_keys="Subscriber.subscriber_id",
+        back_populates="subscriber",
+        cascade="all, delete-orphan", passive_deletes=True
+    )
+
+    subscribers = relationship(
+        "Subscriber",
+        foreign_keys="Subscriber.author_id",
+        back_populates="author",
+        cascade="all, delete-orphan", passive_deletes=True
+    )
