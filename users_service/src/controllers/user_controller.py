@@ -63,9 +63,6 @@ async def update_user(db: AsyncSession, user: models.user.User, email: str = Non
 
 
 async def update_subscription_key(db: AsyncSession, user: models.user.User, subscription_key: str) -> models.user.User:
-    """
-    Обновляет subscription_key для пользователя
-    """
     user.subscription_key = subscription_key
     db.add(user)
     await db.commit()
