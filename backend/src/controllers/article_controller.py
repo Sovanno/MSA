@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
+from celery_client import enqueue_notify
 
 
 async def create_article(db: AsyncSession, author_id: int, title: str, description: Optional[str], body: Optional[str], tag_list: Optional[List[str]]):
@@ -23,6 +24,7 @@ async def create_article(db: AsyncSession, author_id: int, title: str, descripti
     db.add(article)
     await db.commit()
     await db.refresh(article)
+    enqueue_notify(author_id, article.id)
     return article
 
 
