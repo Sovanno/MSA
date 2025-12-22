@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from src.database import base
 
@@ -11,7 +11,7 @@ class User(base):
     password = Column(String, nullable=False)
     bio = Column(String, default="")
     image = Column(String, default="")
-    subscription_key = Column(Text, nullable=True)
+    subscription_key = Column(String, nullable=True)
 
     subscriptions = relationship(
         "Subscriber",
