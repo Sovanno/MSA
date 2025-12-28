@@ -7,6 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from celery_client import enqueue_notify
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def create_article(db: AsyncSession, author_id: int, title: str, description: Optional[str], body: Optional[str], tag_list: Optional[List[str]]):
@@ -26,10 +29,11 @@ async def create_article(db: AsyncSession, author_id: int, title: str, descripti
     await db.refresh(article)
     try:
         enqueue_notify(author_id, article.id)
-    except e:
-        print(e)
+        logger.info(f"Notification queued for article {article.id}, author {author_id}")
+    except Exception as e:
+        logger.error(f"Failed to queue notification for article {article.id}: {str(e)}",
+                     exc_info=True)
     return article
-#подправить
 
 async def get_article(db: AsyncSession, slug: str):
     db.expire_all()
