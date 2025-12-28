@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     jwt_secret: str = Field(..., alias="JWT_SECRET")
     access_token_expire_minutes: int = Field(..., alias="ACCESS_TOKEN_EXPIRE_MINUTES")
 
-    redis_url: str = Field(..., alias= "redis://redis:6379/0")
-    push_url: str = Field(..., alias= "http://push-notificator:8000/api/v1/notify")
+    redis_url: str = Field(..., alias="REDIS_URL")
+    push_url: str = Field(..., alias= "PUSH_URL")
 
     # Настройки чтения .env файла
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

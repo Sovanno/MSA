@@ -24,9 +24,12 @@ async def create_article(db: AsyncSession, author_id: int, title: str, descripti
     db.add(article)
     await db.commit()
     await db.refresh(article)
-    enqueue_notify(author_id, article.id)
+    try:
+        enqueue_notify(author_id, article.id)
+    except e:
+        print(e)
     return article
-
+#подправить
 
 async def get_article(db: AsyncSession, slug: str):
     db.expire_all()

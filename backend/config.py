@@ -15,13 +15,10 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = Field(..., alias="ACCESS_TOKEN_EXPIRE_MINUTES")
 
     redis_url: str = Field(..., alias="REDIS_URL")
-
-    users_service_url: str = Field(..., alias="USERS_SERVICE_URL")
-    push_service_url: str = Field(..., alias="PUSH_SERVICE_URL")
+    push_url: str = Field(..., alias= "PUSH_URL")
 
     # Настройки чтения .env файла
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
 
 
 # Создаем экземпляр конфигурации

@@ -44,7 +44,7 @@ async def update_current_user(payload: schemas.UserUpdate, db: AsyncSession = De
 class SubscriptionKeyIn(BaseModel):
     subscription_key: str
 
-@router.put("/users/me/subscription-key", tags=["users"])
+@router.put("/users/me/subscription-key", tags=["subscribe"])
 async def put_subscription_key(payload: SubscriptionKeyIn, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     current_user.subscription_key = payload.subscription_key
     db.add(current_user)
@@ -60,7 +60,7 @@ async def put_subscription_key(payload: SubscriptionKeyIn, db: AsyncSession = De
 class SubscribeIn(BaseModel):
     target_user_id: int
 
-@router.post("/users/subscribe", status_code=204, tags=["users"])
+@router.post("/users/subscribe", status_code=204, tags=["subscribe"])
 async def subscribe(payload: SubscribeIn, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     if current_user.id == payload.target_user_id:
         raise HTTPException(status_code=400, detail="Cannot subscribe to yourself")

@@ -6,6 +6,7 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+
 def upgrade() -> None:
     op.create_table(
         'users',
@@ -15,12 +16,13 @@ def upgrade() -> None:
         sa.Column('password', sa.String(), nullable=False),
         sa.Column('bio', sa.String(), nullable=True, server_default=""),
         sa.Column('image', sa.String(), nullable=True, server_default=""),
+        sa.Column('subscription_key', sa.String(), nullable=True),  # ← ЗДЕСЬ
     )
+
+    # Создаем индексы
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=True)
     op.create_index(op.f('ix_users_id'), 'users', ['id'])
-
-    op.add_column('users', sa.Column('subscription_key', sa.String(), nullable=True))
 
     # create subscribers table
     op.create_table(
@@ -41,6 +43,7 @@ def upgrade() -> None:
         sa.Column('sent_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
     )
     op.create_unique_constraint('ux_notification', 'notifications_sent', ['subscriber_id', 'post_id'])
+
 
 def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')

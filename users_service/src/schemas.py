@@ -40,18 +40,3 @@ class TokenPayload(BaseModel):
 
     class Config:
         from_attributes = True
-
-# Subscriptions
-
-class SubscriptionKeyUpdate(BaseModel):
-    subscription_key: str
-
-class SubscriptionCreate(BaseModel):
-    target_user_id: int
-
-class SubscriberResponse(BaseModel):
-    subscriber_id: int
-    subscription_key: Optional[str]
-
-    class Config:
-        from_attributes = True

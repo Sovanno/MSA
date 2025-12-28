@@ -25,32 +25,6 @@ services:
     ports:
       - "5433:5432"
 
-  backend_migrations:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    depends_on:
-      - msa_db
-    env_file: .env
-    command: >
-      sh -c "
-      alembic upgrade head
-      "
-    restart: "no"
-
-  users_service_migrations:
-    build:
-      context: ./users_service
-      dockerfile: Dockerfile
-    depends_on:
-      - msa_users_db
-    env_file: .env
-    command: >
-      sh -c "
-      alembic upgrade head
-      "
-    restart: "no"
-
   redis:
     image: redis:7-alpine
     ports:
@@ -74,7 +48,7 @@ services:
     env_file: .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - USERS_DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@msa_users_db:5432/${POSTGRES_USER}
+      - USERS_DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@msa_users_db:5432/${POSTGRES_USER}
       - PUSH_URL=http://push-notificator:8000/api/v1/notify
     restart: unless-stopped
 
@@ -86,7 +60,7 @@ services:
       - msa_users_db
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
       JWT_SECRET: ${JWT_SECRET}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
     ports:
@@ -99,9 +73,10 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - msa_db
+      - redis
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/main_db
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/main_db
       USERS_JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8000:8000"

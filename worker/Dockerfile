@@ -4,4 +4,5 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 ENV PYTHONUNBUFFERED=1
-CMD ["celery", "-A", "tasks", "worker", "--loglevel=info", "--concurrency=4"]
+CMD ["celery", "-A", "src.celery_app:celery_app", "worker", "--loglevel=info"]
+

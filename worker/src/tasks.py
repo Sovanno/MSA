@@ -1,30 +1,27 @@
-# файл: worker/tasks.py
 from celery import Celery
-import os
 import requests
 import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from config import settings
+from .celery_app import celery_app
 
 REDIS_URL = settings.redis_url
 celery = Celery("worker", broker=REDIS_URL, backend=REDIS_URL)
 
-USERS_DATABASE_URL = settings.database_users_url
+USERS_DATABASE_URL = settings.database_users_url.replace(
+    "postgresql+asyncpg://",
+    "postgresql://"
+)
 engine = create_engine(USERS_DATABASE_URL, pool_pre_ping=True)
 
 PUSH_URL = settings.push_url
 REQUEST_TIMEOUT = 5
 
-@celery.task(bind=True, max_retries=5)
+@celery_app.task(bind=True, max_retries=5)
 def notify_followers(self, author_id: int, post_id: int):
-    """
-    Стратегия:
-     - читаем подписчиков из таблицы subscribers JOIN users (чтобы получить subscription_key)
-     - для каждого: пытаемся insert в notifications_sent (уникальность), если уже есть — пропускаем
-     - отправляем POST к PUSH_URL с заголовком Authorization: Bearer <key>
-     - при ошибке: удаляем запись из notifications_sent и retry
-    """
+
+    print(author_id, post_id)
     logging.info("task start: author=%s post=%s", author_id, post_id)
     conn = engine.connect()
     try:
@@ -56,7 +53,7 @@ def notify_followers(self, author_id: int, post_id: int):
                 logging.error("DB error when creating notifications_sent: %s", e)
                 raise self.retry(exc=e, countdown=2 ** self.request.retries)
 
-            msg = f"Пользователь {author_id} выпустил новый пост: {str(post_id)[:10]}..."  # короткая заглушка
+            msg = f"Пользователь {author_id} выпустил новый пост: {str(post_id)[:10]}"
 
             headers = {
                 "Authorization": f"Bearer {subscription_key}",
