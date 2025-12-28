@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     bio: Optional[str] = ""
     image: Optional[str] = ""
     token: Optional[str] = None
+    subscription_key: Optional[str] = None
 
     class Config:
         orm_mode = True

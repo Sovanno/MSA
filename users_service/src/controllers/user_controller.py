@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from src import models
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 

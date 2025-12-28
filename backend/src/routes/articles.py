@@ -15,6 +15,7 @@ async def create_article_route(payload: schemas.ArticleCreate, db: AsyncSession 
         article = await create_article(db, current_user.id, payload.title, payload.description, payload.body, payload.tagList)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
     return schemas.ArticleResponse(
         slug=article.slug,
         title=article.title,

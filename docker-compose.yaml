@@ -25,6 +25,33 @@ services:
     ports:
       - "5433:5432"
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  push-notificator:
+    image: ghcr.io/ayusavin/push-notification-playground:1.0.0
+    ports:
+      - "8002:8000"   # на хосте порт 8002 (чтобы не конфликтовать с users_service)
+    environment:
+      - PUSH_ALLOW_ORIGIN=*
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    depends_on:
+      - msa_users_db
+      - redis
+      - push-notificator
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - USERS_DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@msa_users_db:5432/${POSTGRES_USER}
+      - PUSH_URL=http://push-notificator:8000/api/v1/notify
+    restart: unless-stopped
+
   users_service:
     build:
       context: ./users_service
@@ -33,7 +60,7 @@ services:
       - msa_users_db
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
       JWT_SECRET: ${JWT_SECRET}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
     ports:
@@ -46,9 +73,10 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - msa_db
+      - redis
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/main_db
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/main_db
       USERS_JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8000:8000"
